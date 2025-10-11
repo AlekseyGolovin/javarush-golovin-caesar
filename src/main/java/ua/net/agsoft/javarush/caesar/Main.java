@@ -11,8 +11,8 @@ public class Main {
             return;
         }
 
-        Runner runner = new Runner(runSettings);
-        runner.run();
+        Runner runner = new Runner();
+        runner.run(runSettings);
     }
 
 

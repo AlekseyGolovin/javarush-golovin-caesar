@@ -7,8 +7,7 @@ import java.nio.file.Path;
 
 public class RunSettings {
 
-    private static final String BAD_FILE_PATH = "BAD file path. Ensure the file exists";
-    private static final String BAD_WORDS_FILE_PATH = "BAD key-words file path. Ensure the file exists";
+
 
     private Command command;
     private Path filePath;
@@ -55,7 +54,7 @@ public class RunSettings {
             if (Util.isFileExists(externalWordlist)) {
                 useFileWords = true;
             } else {
-                System.out.println(BAD_WORDS_FILE_PATH);
+                System.out.println(Message.BAD_WORDS_FILE_PATH);
             }
         }
     }
@@ -105,7 +104,7 @@ public class RunSettings {
         if (Util.isFileExists(filePath)) {
             return true;
         } else {
-            System.out.println(BAD_FILE_PATH);
+            System.out.println(Message.BAD_FILE_PATH);
             return false;
         }
     }
