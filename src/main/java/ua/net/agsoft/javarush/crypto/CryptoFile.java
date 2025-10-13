@@ -14,8 +14,8 @@ import java.util.List;
 
 public class CryptoFile {
 
-    private Path srcFilePath;
-    private Crypto crypto;
+    private final Path srcFilePath;
+    private final Crypto crypto;
 
     public CryptoFile(Path srcFilePath, Crypto crypto){
         this.srcFilePath = srcFilePath;
@@ -31,8 +31,8 @@ public class CryptoFile {
                 char desChar = crypto.encrypt(srcChar);
                 desWriter.append(desChar);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            throw new RuntimeException("Problem encrypting file: "+ex.getMessage());
         }
     }
 
@@ -104,10 +104,10 @@ public class CryptoFile {
                 String[] keyWords = lineForAnalysis.split(" ");
                 Collections.addAll(keyWordSet, keyWords);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (IOException ex) {
+            throw new RuntimeException("Problems getting keyword file: "+ex.getMessage());
         }
-        return (String[])keyWordSet.toArray();
+        return (String[]) keyWordSet.toArray();
     }
 
     public void decryptTo(Path desFilePath) {
@@ -119,8 +119,8 @@ public class CryptoFile {
                 char desChar = crypto.decrypt(srcChar);
                 desWriter.append(desChar);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            throw new RuntimeException("Problem decrypting file: "+ex.getMessage());
         }
     }
 
@@ -146,8 +146,7 @@ public class CryptoFile {
             }
             String text = new String(desFragment, 0, bufLength);
             return getRate(text, keyWords);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ignore) {
             return 0;
         }
     }
