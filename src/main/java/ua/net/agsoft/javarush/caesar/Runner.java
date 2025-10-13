@@ -8,14 +8,12 @@ import java.nio.file.Path;
 
 public class Runner {
 
+    //private final RunSettings runSettings;
 
-    private RunSettings runSettings;
-
-    public Runner(RunSettings runSettings) {
-        this.runSettings = runSettings;
+    public Runner() {
     }
 
-    public void run() {
+    public void run(RunSettings runSettings) {
         switch (runSettings.getCommand()) {
             case ENCRYPT -> encryptFile(runSettings);
             case DECRYPT -> decryptFile(runSettings);
@@ -24,24 +22,26 @@ public class Runner {
         }
     }
 
-    private void encryptFile(RunSettings po) {
-        Path filepath = po.getFilePath();
-        int offset = po.getOffset();
-        CryptoAlphabetType alphabetType = po.getAlphabetType();
-        Path resultFilePath = getResultFilePath(filepath, Command.ENCRYPT);
+    private void encryptFile(RunSettings runSettings) {
+        Path filePath = runSettings.getFilePath();
+        int offset = runSettings.getOffset();
+        CryptoAlphabetType alphabetType = runSettings.getAlphabetType();
+        Path resultFilePath = getResultFilePath(filePath, Command.ENCRYPT);
         Crypto crypto = new Crypto(alphabetType);
         crypto.setOffset(offset);
-        CryptoFile.encryptFile(filepath, resultFilePath, crypto);
+        CryptoFile cryptoFile = new CryptoFile(filePath, crypto);
+        cryptoFile.encryptTo(resultFilePath);
     }
 
-    private void decryptFile(RunSettings po) {
-        Path filepath = po.getFilePath();
-        int offset = po.getOffset();
-        CryptoAlphabetType alphabetType = po.getAlphabetType();
+    private void decryptFile(RunSettings runSettings) {
+        Path filepath = runSettings.getFilePath();
+        int offset = runSettings.getOffset();
+        CryptoAlphabetType alphabetType = runSettings.getAlphabetType();
         Path resultFilePath = getResultFilePath(filepath, Command.DECRYPT);
         Crypto crypto = new Crypto(alphabetType);
         crypto.setOffset(offset);
-        CryptoFile.decryptFile(filepath, resultFilePath, crypto);
+        CryptoFile cryptoFile = new CryptoFile(filepath, crypto);
+        cryptoFile.decryptTo(resultFilePath);
     }
 
     private void bruteForceFile(RunSettings runSettings) {
@@ -49,11 +49,12 @@ public class Runner {
         CryptoAlphabetType alphabetType = runSettings.getAlphabetType();
         Crypto crypto = new Crypto(alphabetType);
         int offset;
+        CryptoFile cryptoFile = new CryptoFile(filePath, crypto);
         if (runSettings.isNeedUseFileWords()) {
             String[] keyWords = CryptoFile.getKeyWords(runSettings.getExternalWordlistPath());
-            offset = CryptoFile.getCryptoOffset(filePath, crypto, keyWords);
+            offset = cryptoFile.getCryptoOffset(keyWords);
         } else {
-            offset = CryptoFile.getCryptoOffset(filePath, crypto, null);
+            offset = cryptoFile.getCryptoOffset(null);
         }
         RunSettings runSettingsForDecrypt = new RunSettings();
         runSettingsForDecrypt.setCommand(Command.DECRYPT);
@@ -64,8 +65,8 @@ public class Runner {
     }
 
     private Path getResultFilePath(Path filepath, Command command) {
-        String added = "DECRYPTED";
-        if (command == Command.ENCRYPT) added = "ENCRYPTED";
+        String addedMark = "DECRYPTED";
+        if (command == Command.ENCRYPT) addedMark = "ENCRYPTED";
         String fileName = filepath.getFileName().toString();
         Path directory = filepath.getParent();
         int pointPos = fileName.lastIndexOf(".");
@@ -73,9 +74,9 @@ public class Runner {
         String resultFileExt = fileName.substring(pointPos);
         String resultFileName;
         if (markPos >= 0) {
-            resultFileName = fileName.substring(0, markPos) + "[" + added + "]" + resultFileExt;
+            resultFileName = fileName.substring(0, markPos) + "[" + addedMark + "]" + resultFileExt;
         } else {
-            resultFileName = fileName.substring(0, pointPos) + "[" + added + "]" + resultFileExt;
+            resultFileName = fileName.substring(0, pointPos) + "[" + addedMark + "]" + resultFileExt;
         }
         return directory.resolve(resultFileName);
     }
@@ -85,7 +86,7 @@ public class Runner {
         int markPosEncrypt = fileName.indexOf("[ENCRYPTED]");
         int markPosDecrypt = fileName.indexOf("[DECRYPTED]");
         if (markPosEncrypt >= 0) markPos = markPosEncrypt;
-        if (markPosDecrypt >= 0 && markPosDecrypt < markPos) markPos = markPosEncrypt;
+        if (markPosDecrypt >= 0 && markPosDecrypt < markPos) markPos = markPosDecrypt;
         return markPos;
     }
 

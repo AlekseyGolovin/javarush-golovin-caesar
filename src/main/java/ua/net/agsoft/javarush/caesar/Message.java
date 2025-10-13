@@ -5,6 +5,8 @@ public class Message {
     // @formatter:off
 
     public static final String BAD_COMMAND = "BAD command. Possible options: ENCRYPT, DECRYPT or BRUTE_FORCE";
+    public static final String BAD_FILE_PATH = "BAD file path. Ensure the file exists";
+    public static final String BAD_WORDS_FILE_PATH = "BAD key-words file path. Ensure the file exists";
 
     public static final String BAD_ARGUMENTS =
             "Please use the following command-line format:\n" +

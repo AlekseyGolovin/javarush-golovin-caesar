@@ -14,8 +14,15 @@ import java.util.List;
 
 public class CryptoFile {
 
+    private final Path srcFilePath;
+    private final Crypto crypto;
 
-    public static void encryptFile(Path srcFilePath, Path desFilePath, Crypto crypto) {
+    public CryptoFile(Path srcFilePath, Crypto crypto){
+        this.srcFilePath = srcFilePath;
+        this.crypto = crypto;
+    }
+
+    public void encryptTo(Path desFilePath) {
         try (BufferedReader srcReader = Files.newBufferedReader(srcFilePath);
              BufferedWriter desWriter = Files.newBufferedWriter(desFilePath)) {
             int srcInt;
@@ -24,38 +31,12 @@ public class CryptoFile {
                 char desChar = crypto.encrypt(srcChar);
                 desWriter.append(desChar);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            throw new RuntimeException("Problem encrypting file: "+ex.getMessage());
         }
     }
 
-    public static void decryptFile(Path srcFilePath, Path desFilePath, Crypto crypto) {
-        try (BufferedReader srcReader = Files.newBufferedReader(srcFilePath);
-             BufferedWriter desWriter = Files.newBufferedWriter(desFilePath)) {
-            int srcInt;
-            while ((srcInt = srcReader.read()) != -1) {
-                char srcChar = (char) srcInt;
-                char desChar = crypto.decrypt(srcChar);
-                desWriter.append(desChar);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static int getCryptoOffset(Path srcFilePath, Crypto crypto, String[] keyWords) {
-        HashMap<Integer, Integer> offsetRate = new HashMap<>();
-        crypto.setOffset(0);
-        do {
-            int offset = crypto.getOffset();
-            int rate = getRate(srcFilePath, crypto, keyWords);
-            System.out.println("getCryptoOffset [" + offset + "]: " + rate);
-            offsetRate.put(offset, rate);
-        } while (crypto.canSetNextOffset());
-        return getCryptoOffsetFromMap(offsetRate);
-    }
-
-    public static int getCryptoOffsetFromMap(HashMap<Integer, Integer> offsetRate) {
+    private static int getCryptoOffsetFromMap(HashMap<Integer, Integer> offsetRate) {
         int ratePos = 0;
         int maxRate = 0;
         for (var pair : offsetRate.entrySet()) {
@@ -68,22 +49,6 @@ public class CryptoFile {
         }
         System.out.println("getCryptoOffset BEST: " + ratePos);
         return ratePos;
-    }
-
-    private static int getRate(Path srcFilePath, Crypto crypto, String[] keyWords) {
-        char[] srcFragment = new char[512];
-        char[] desFragment = new char[512];
-        try (BufferedReader srcReader = Files.newBufferedReader(srcFilePath)) {
-            int bufLength = srcReader.read(srcFragment);
-            for (int i = 0; i < bufLength; i++) {
-                desFragment[i] = crypto.decrypt(srcFragment[i]);
-            }
-            String text = new String(desFragment, 0, bufLength);
-            return getRate(text, keyWords);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return 0;
-        }
     }
 
     private static int getRate(String text) {
@@ -139,11 +104,54 @@ public class CryptoFile {
                 String[] keyWords = lineForAnalysis.split(" ");
                 Collections.addAll(keyWordSet, keyWords);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (IOException ex) {
+            throw new RuntimeException("Problems getting keyword file: "+ex.getMessage());
         }
-        return (String[])keyWordSet.toArray();
+        return (String[]) keyWordSet.toArray();
     }
+
+    public void decryptTo(Path desFilePath) {
+        try (BufferedReader srcReader = Files.newBufferedReader(srcFilePath);
+             BufferedWriter desWriter = Files.newBufferedWriter(desFilePath)) {
+            int srcInt;
+            while ((srcInt = srcReader.read()) != -1) {
+                char srcChar = (char) srcInt;
+                char desChar = crypto.decrypt(srcChar);
+                desWriter.append(desChar);
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException("Problem decrypting file: "+ex.getMessage());
+        }
+    }
+
+    public int getCryptoOffset(String[] keyWords) {
+        HashMap<Integer, Integer> offsetRate = new HashMap<>();
+        crypto.setOffset(0);
+        do {
+            int offset = crypto.getOffset();
+            int rate = getRate(keyWords);
+            System.out.println("getCryptoOffset [" + offset + "]: " + rate);
+            offsetRate.put(offset, rate);
+        } while (crypto.canSetNextOffset());
+        return getCryptoOffsetFromMap(offsetRate);
+    }
+
+    private int getRate(String[] keyWords) {
+        char[] srcFragment = new char[512];
+        char[] desFragment = new char[512];
+        try (BufferedReader srcReader = Files.newBufferedReader(srcFilePath)) {
+            int bufLength = srcReader.read(srcFragment);
+            for (int i = 0; i < bufLength; i++) {
+                desFragment[i] = crypto.decrypt(srcFragment[i]);
+            }
+            String text = new String(desFragment, 0, bufLength);
+            return getRate(text, keyWords);
+        } catch (IOException ignore) {
+            return 0;
+        }
+    }
+
+
 
 
 
