@@ -1,17 +1,15 @@
 package ua.net.agsoft.javarush.caesar;
 
-import ua.net.agsoft.javarush.crypto.Crypto;
-import ua.net.agsoft.javarush.crypto.CryptoAlphabetType;
-import ua.net.agsoft.javarush.crypto.CryptoFile;
+import ua.net.agsoft.javarush.caesar.crypto.Crypto;
+import ua.net.agsoft.javarush.caesar.crypto.CryptoAlphabetType;
+import ua.net.agsoft.javarush.caesar.crypto.CryptoFile;
 
 import java.nio.file.Path;
 
 public class Runner {
 
-    //private final RunSettings runSettings;
-
-    public Runner() {
-    }
+//    public Runner() {
+//    }
 
     public void run(RunSettings runSettings) {
         switch (runSettings.getCommand()) {
@@ -66,7 +64,9 @@ public class Runner {
 
     private Path getResultFilePath(Path filepath, Command command) {
         String addedMark = "DECRYPTED";
-        if (command == Command.ENCRYPT) addedMark = "ENCRYPTED";
+        if (command == Command.ENCRYPT) {
+            addedMark = "ENCRYPTED";
+        }
         String fileName = filepath.getFileName().toString();
         Path directory = filepath.getParent();
         int pointPos = fileName.lastIndexOf(".");
@@ -85,8 +85,12 @@ public class Runner {
         int markPos = -1;
         int markPosEncrypt = fileName.indexOf("[ENCRYPTED]");
         int markPosDecrypt = fileName.indexOf("[DECRYPTED]");
-        if (markPosEncrypt >= 0) markPos = markPosEncrypt;
-        if (markPosDecrypt >= 0 && markPosDecrypt < markPos) markPos = markPosDecrypt;
+        if (markPosEncrypt >= 0) {
+            markPos = markPosEncrypt;
+        }
+        if (markPosDecrypt >= 0 && markPosDecrypt < markPos) {
+            markPos = markPosDecrypt;
+        }
         return markPos;
     }
 

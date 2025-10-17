@@ -1,6 +1,6 @@
 package ua.net.agsoft.javarush.caesar;
 
-import ua.net.agsoft.javarush.util.Util;
+import ua.net.agsoft.javarush.caesar.util.Util;
 
 import java.nio.file.Path;
 import java.util.Scanner;
@@ -9,8 +9,12 @@ public class SettingsController {
 
 
     public boolean control(String[] args, RunSettings runSettings) {
-        if (controlArguments(args, runSettings)) return true;
-        if (!requestManualInput()) return false;
+        if (controlArguments(args, runSettings)) {
+            return true;
+        }
+        if (!requestManualInput()) {
+            return false;
+        }
         Command command = requestCommand();
         runSettings.setCommand(command);
         runSettings.setFilePath(requestFilePath());
@@ -31,14 +35,18 @@ public class SettingsController {
     }
 
     private boolean controlArguments(String[] args, RunSettings runSettings) {
-        if (args.length < 2 || args.length > 4) return false;
+        if (args.length < 2 || args.length > 4) {
+            return false;
+        }
         runSettings.setCommand(Command.of(args[0]));
         runSettings.setFilePath(Path.of(args[1]));
         if (args.length >= 3) {
             runSettings.setKey(args[2]);
             runSettings.setExternalWordlist(args[2]);
         }
-        if (args.length == 4) runSettings.setAlphabetType(args[3]);
+        if (args.length == 4) {
+            runSettings.setAlphabetType(args[3]);
+        }
         System.out.println(runSettings);
         return runSettings.isValid();
     }
@@ -118,7 +126,9 @@ public class SettingsController {
         do {
             System.out.println(Message.KEY_WORD_REQUEST);
             String answer = scanner.nextLine().toLowerCase();
-            if (answer.isBlank()) return "";
+            if (answer.isBlank()) {
+                return "";
+            }
             path = Path.of(answer);
             isCorrect = Util.isFileExists(path);
         } while (!isCorrect);

@@ -1,6 +1,6 @@
-package ua.net.agsoft.javarush.crypto;
+package ua.net.agsoft.javarush.caesar.crypto;
 
-import ua.net.agsoft.javarush.util.Util;
+import ua.net.agsoft.javarush.caesar.util.Util;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -53,32 +53,26 @@ public class CryptoFile {
 
     private static int getRate(String text) {
         String textForAnalysis = Util.prepareTextForAnalysis(text);
-        int enRate = getEnRate(textForAnalysis);
+        int enRate = getRate(textForAnalysis, CommonWords.EN);
         System.out.println("getRate EN: " + enRate);
-        int uaRate = getUaRate(textForAnalysis);
+        int uaRate = getRate(textForAnalysis, CommonWords.UA);
         System.out.println("getRate UA: " + uaRate);
-        int ruRate = getRuRate(textForAnalysis);
+        int ruRate = getRate(textForAnalysis, CommonWords.RU);
         System.out.println("getRate RU: " + ruRate);
         int maxRate = enRate;
-        if (uaRate > maxRate) maxRate = uaRate;
-        if (ruRate > maxRate) maxRate = ruRate;
+        if (uaRate > maxRate) {
+            maxRate = uaRate;
+        }
+        if (ruRate > maxRate) {
+            maxRate = ruRate;
+        }
         return maxRate;
     }
 
-    private static int getEnRate(String text) {
-        return getRate(text, CommonWords.EN);
-    }
-
-    private static int getUaRate(String text) {
-        return getRate(text, CommonWords.UA);
-    }
-
-    private static int getRuRate(String text) {
-        return getRate(text, CommonWords.RU);
-    }
-
     private static int getRate(String text, String[] commonWords) {
-        if (commonWords == null) return getRate(text);
+        if (commonWords == null) {
+            return getRate(text);
+        }
         text = " " + text + " ";
         int rate = 0;
         for (String commonWord : commonWords) {
@@ -89,7 +83,9 @@ public class CryptoFile {
             rate++;
             do {
                 lastPos = text.indexOf(word, lastPos + wordLength);
-                if (lastPos != -1) rate++;
+                if (lastPos != -1) {
+                    rate++;
+                }
             } while (lastPos != -1);
         }
         return rate;

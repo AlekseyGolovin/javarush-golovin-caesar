@@ -1,4 +1,4 @@
-package ua.net.agsoft.javarush.crypto;
+package ua.net.agsoft.javarush.caesar.crypto;
 
 public class Crypto {
 
@@ -22,8 +22,12 @@ public class Crypto {
 
     public void setOffset(int offset) {
         this.offset = offset;
-        if (offset  >= alphabetLength)  this.offset = alphabetLength;
-        if (offset  < 0) this.offset  = 0;
+        if (offset  >= alphabetLength)  {
+            this.offset = alphabetLength;
+        }
+        if (offset  < 0) {
+            this.offset  = 0;
+        }
     }
 
     private void nextOffset() {
@@ -48,7 +52,9 @@ public class Crypto {
                 break;
             }
         }
-        if (charPosition < 0) return srcChar;
+        if (charPosition < 0) {
+            return srcChar;
+        }
         charPosition += offset;
         while (charPosition >= alphabetLength) {
             charPosition -= alphabetLength;
@@ -65,7 +71,9 @@ public class Crypto {
                 break;
             }
         }
-        if (pos < 0) return srcChar;
+        if (pos < 0) {
+            return srcChar;
+        }
         pos -= offset;
         while (pos < 0) {
             pos += alphabetLength;
