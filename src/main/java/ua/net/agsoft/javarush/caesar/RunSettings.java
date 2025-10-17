@@ -1,7 +1,7 @@
 package ua.net.agsoft.javarush.caesar;
 
-import ua.net.agsoft.javarush.crypto.CryptoAlphabetType;
-import ua.net.agsoft.javarush.util.Util;
+import ua.net.agsoft.javarush.caesar.crypto.CryptoAlphabetType;
+import ua.net.agsoft.javarush.caesar.util.Util;
 
 import java.nio.file.Path;
 
@@ -110,8 +110,12 @@ public class RunSettings {
     }
 
     public boolean isValid() {
-        if (!isValidCommand()) return false;
-        if (!isValidFilePath()) return false;
+        if (!isValidCommand()) {
+            return false;
+        }
+        if (!isValidFilePath()) {
+            return false;
+        }
         if ((command == Command.ENCRYPT || command == Command.DECRYPT) && !Util.isInteger(key)) {
             return false;
         }

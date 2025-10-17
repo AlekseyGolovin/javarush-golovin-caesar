@@ -1,4 +1,4 @@
-package ua.net.agsoft.javarush.crypto;
+package ua.net.agsoft.javarush.caesar.crypto;
 
 public enum CryptoAlphabetType {
 
