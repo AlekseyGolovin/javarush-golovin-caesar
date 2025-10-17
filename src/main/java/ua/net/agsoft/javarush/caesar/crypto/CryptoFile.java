@@ -120,7 +120,7 @@ public class CryptoFile {
         }
     }
 
-    public int getCryptoOffset(String[] keyWords) {
+    public int calculateOptimalOffset(String[] keyWords) {
         HashMap<Integer, Integer> offsetRate = new HashMap<>();
         crypto.setOffset(0);
         do {

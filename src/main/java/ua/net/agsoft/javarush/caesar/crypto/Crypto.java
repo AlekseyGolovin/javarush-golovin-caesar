@@ -23,10 +23,10 @@ public class Crypto {
     public void setOffset(int offset) {
         this.offset = offset;
         if (offset  >= alphabetLength)  {
-            this.offset = alphabetLength;
+            this.offset = (offset % alphabetLength);
         }
         if (offset  < 0) {
-            this.offset  = 0;
+            this.offset  = alphabetLength + offset % alphabetLength;
         }
     }
 
@@ -35,7 +35,7 @@ public class Crypto {
     }
 
     public boolean canSetNextOffset() {
-        if (offset < alphabetLength - 1) {
+        if (offset < alphabetLength - 2) {
             nextOffset();
             return true;
         } else {

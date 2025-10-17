@@ -1,65 +1,59 @@
 package ua.net.agsoft.javarush.caesar;
 
 import ua.net.agsoft.javarush.caesar.crypto.Crypto;
-import ua.net.agsoft.javarush.caesar.crypto.CryptoAlphabetType;
 import ua.net.agsoft.javarush.caesar.crypto.CryptoFile;
 
 import java.nio.file.Path;
 
 public class Runner {
 
-//    public Runner() {
-//    }
-
     public void run(RunSettings runSettings) {
+
         switch (runSettings.getCommand()) {
             case ENCRYPT -> encryptFile(runSettings);
             case DECRYPT -> decryptFile(runSettings);
             case BRUTE_FORCE -> bruteForceFile(runSettings);
-            case BAD_COMMAND -> System.out.println(Message.BAD_COMMAND);
         }
     }
 
     private void encryptFile(RunSettings runSettings) {
         Path filePath = runSettings.getFilePath();
-        int offset = runSettings.getOffset();
-        CryptoAlphabetType alphabetType = runSettings.getAlphabetType();
         Path resultFilePath = getResultFilePath(filePath, Command.ENCRYPT);
-        Crypto crypto = new Crypto(alphabetType);
-        crypto.setOffset(offset);
+        Crypto crypto = new Crypto(runSettings.getAlphabetType());
+        crypto.setOffset(runSettings.getOffset());
         CryptoFile cryptoFile = new CryptoFile(filePath, crypto);
         cryptoFile.encryptTo(resultFilePath);
     }
 
     private void decryptFile(RunSettings runSettings) {
         Path filepath = runSettings.getFilePath();
-        int offset = runSettings.getOffset();
-        CryptoAlphabetType alphabetType = runSettings.getAlphabetType();
         Path resultFilePath = getResultFilePath(filepath, Command.DECRYPT);
-        Crypto crypto = new Crypto(alphabetType);
-        crypto.setOffset(offset);
+        Crypto crypto = new Crypto(runSettings.getAlphabetType());
+        crypto.setOffset(runSettings.getOffset());
         CryptoFile cryptoFile = new CryptoFile(filepath, crypto);
         cryptoFile.decryptTo(resultFilePath);
     }
 
     private void bruteForceFile(RunSettings runSettings) {
         Path filePath = runSettings.getFilePath();
-        CryptoAlphabetType alphabetType = runSettings.getAlphabetType();
-        Crypto crypto = new Crypto(alphabetType);
-        int offset;
+        Crypto crypto = new Crypto(runSettings.getAlphabetType());
         CryptoFile cryptoFile = new CryptoFile(filePath, crypto);
+        String[] keyWords = null;
         if (runSettings.isNeedUseFileWords()) {
-            String[] keyWords = CryptoFile.getKeyWords(runSettings.getExternalWordlistPath());
-            offset = cryptoFile.getCryptoOffset(keyWords);
-        } else {
-            offset = cryptoFile.getCryptoOffset(null);
+            keyWords = CryptoFile.getKeyWords(runSettings.getExternalWordlistPath());
         }
+        int offset = cryptoFile.calculateOptimalOffset(keyWords);
+        RunSettings runSettingsForDecrypt = getSettingsForDecrypt(runSettings, offset);
+        decryptFile(runSettingsForDecrypt);
+    }
+
+    private static RunSettings getSettingsForDecrypt(RunSettings runSettings, int offset) {
         RunSettings runSettingsForDecrypt = new RunSettings();
         runSettingsForDecrypt.setCommand(Command.DECRYPT);
-        runSettingsForDecrypt.setFilePath(filePath);
+        runSettingsForDecrypt.setFilePath(runSettings.getFilePath());
         runSettingsForDecrypt.setOffset(offset);
-        runSettingsForDecrypt.setAlphabetType(alphabetType);
-        decryptFile(runSettingsForDecrypt);
+        runSettingsForDecrypt.setAlphabetType(runSettings.getAlphabetType());
+        return runSettingsForDecrypt;
     }
 
     private Path getResultFilePath(Path filepath, Command command) {
