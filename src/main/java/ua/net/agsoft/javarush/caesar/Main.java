@@ -20,6 +20,7 @@ public class Main {
 
     public static void main(String[] args) {
         RunSettings runSettings = getRunSettings(args);
+
         if (runSettings == null) {
             return;
         }

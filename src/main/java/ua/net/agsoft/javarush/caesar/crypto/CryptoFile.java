@@ -7,10 +7,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class CryptoFile {
 
@@ -75,6 +72,11 @@ public class CryptoFile {
         }
         text = " " + text + " ";
         int rate = 0;
+
+        System.out.println("commonWords: "+ Arrays.toString(commonWords));
+        System.out.println("text: "+ text);
+
+
         for (String commonWord : commonWords) {
             int wordLength = commonWord.length();
             String word = " " + commonWord + " ";
