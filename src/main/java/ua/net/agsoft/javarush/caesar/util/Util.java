@@ -1,31 +1,24 @@
 package ua.net.agsoft.javarush.caesar.util;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 public class Util {
 
-    public static boolean isFileExists(Path filepath) {
-        return Files.isRegularFile(filepath);
-    }
-
     public static int tryToInt(String str) {
-        if (str == null || str.isEmpty()) {
+        if (str == null || str.isBlank()) {
             return 0;
         }
         try {
-            return Integer.parseInt(str);
+            return Integer.parseInt(str.trim());
         } catch (NumberFormatException e) {
             return 0;
         }
     }
 
     public static boolean isInteger(String str) {
-        if (str == null || str.isEmpty()) {
+        if (str == null || str.isBlank()) {
             return false;
         }
         try {
-            Integer.parseInt(str);
+            Integer.parseInt(str.trim());
             return true;
         } catch (NumberFormatException e) {
             return false;

@@ -1,7 +1,6 @@
 package ua.net.agsoft.javarush.caesar;
 
 public enum Command {
-    BAD_COMMAND("BAD_COMMAND"),
     ENCRYPT("ENCRYPT"),
     DECRYPT("DECRYPT"),
     BRUTE_FORCE("BRUTE_FORCE");
@@ -13,12 +12,14 @@ public enum Command {
     }
 
     public static Command of(String code) {
-        for (Command command : Command.values()) {
-            if (command.code.equals(code)) {
-                return command;
-            }
+        if (code == null || code.isBlank()) {
+            throw new IllegalArgumentException("Command code cannot be null or blank.");
         }
-        return Command.BAD_COMMAND;
+        try {
+            return Command.valueOf(code.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("BAD command. Possible options: ENCRYPT, DECRYPT or BRUTE_FORCE");
+        }
     }
 
     public String toString() {

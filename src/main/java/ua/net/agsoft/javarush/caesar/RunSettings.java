@@ -3,11 +3,13 @@ package ua.net.agsoft.javarush.caesar;
 import ua.net.agsoft.javarush.caesar.crypto.CryptoAlphabetType;
 import ua.net.agsoft.javarush.caesar.util.Util;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class RunSettings {
 
-
+    public static final String BAD_FILE_PATH = "BAD file path. Ensure the file exists";
+    public static final String BAD_WORDS_FILE_PATH = "BAD key-words file path. Ensure the file exists";
 
     private Command command;
     private Path filePath;
@@ -18,7 +20,6 @@ public class RunSettings {
     private boolean useFileWords;
 
     public RunSettings() {
-        //offset = 0;
         alphabetType = CryptoAlphabetType.EN_BASIC;
         useFileWords = false;
     }
@@ -49,12 +50,12 @@ public class RunSettings {
 
     public void setExternalWordlist(String commonWordsFile) {
         this.externalWordlist = Path.of(commonWordsFile);
-        if (command == Command.BRUTE_FORCE && !Util.isInteger(key)) {
-            // ПОдбор сдвига и ключ не число. предполагаю, что указан путь к файлу ск лючевыми словами
-            if (Util.isFileExists(externalWordlist)) {
+        if (command != null && command == Command.BRUTE_FORCE && !Util.isInteger(key)) {
+            // ПОдбор сдвига и ключ не число. предполагаю, что указан путь к файлу с ключевыми словами
+            if (Files.isRegularFile(externalWordlist)) {
                 useFileWords = true;
             } else {
-                System.out.println(Message.BAD_WORDS_FILE_PATH);
+                System.out.println(BAD_WORDS_FILE_PATH);
             }
         }
     }
@@ -97,30 +98,27 @@ public class RunSettings {
     }
 
     private boolean isValidCommand() {
-        return (command != Command.BAD_COMMAND);
+        return command != null;
     }
 
     private boolean isValidFilePath() {
-        if (Util.isFileExists(filePath)) {
+        if (Files.isRegularFile(filePath)) {
             return true;
         } else {
-            System.out.println(Message.BAD_FILE_PATH);
+            System.out.println(BAD_FILE_PATH);
             return false;
+        }
+    }
+
+    private boolean isValidKey() {
+        if ((command == Command.ENCRYPT || command == Command.DECRYPT) && !Util.isInteger(key)) {
+            return false;
+        } else {
+            return true;
         }
     }
 
     public boolean isValid() {
-        if (!isValidCommand()) {
-            return false;
-        }
-        if (!isValidFilePath()) {
-            return false;
-        }
-        if ((command == Command.ENCRYPT || command == Command.DECRYPT) && !Util.isInteger(key)) {
-            return false;
-        }
-        return true;
+        return isValidCommand() && isValidFilePath() && isValidKey();
     }
-
-
 }

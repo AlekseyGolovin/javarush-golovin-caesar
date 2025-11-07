@@ -2,53 +2,71 @@ package ua.net.agsoft.javarush.caesar;
 
 import ua.net.agsoft.javarush.caesar.util.Util;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Scanner;
 
 public class SettingsController {
 
+    public static final String MANUAL_REQUEST = "Unrecognized launch arguments. Enter parameters manually? [Y/N]";
+    public static final String PATH_REQUEST = "Please provide the absolute path to the file";
+    public static final String KEY_REQUEST = "Enter the cipher key (the integer number of places to shift in the alphabet)";
+    public static final String COMMAND_REQUEST = """
+            Please specify the operation you wish to perform:
+            1 - ENCRYPT
+            2 - DECRYPT
+            3 - BRUTE FORCE""";
+    public static final String KEY_WORD_REQUEST = """
+            Please enter the full path to the dictionary file,
+            or leave the line blank and press Enter to skip""";
+    public static final String ALPHABET_REQUEST = """
+            Please enter the alphabet string to be used for encryption/decryption:
+            1 - EN_BASIC - Basic Latin Alphabet. Only lowercase and uppercase Latin letters.
+            2 - EN_ADVANCED - Extended Latin Alphabet. Basic Latin alphabet plus common punctuation and space.
+            3 - LATIN - Full Latin Set. Includes digits, Latin letters, and a complete set of ASCII special characters.
+            4 - CYRIL - Full Cyrillic Set. Includes everything from LATIN plus all Cyrillic letters
+            5 - LATIN_MIX - Mixed Latin Key. Same characters as LATIN, but randomly shuffled.
+            6 - CYRIL_MIX - Mixed Cyrillic Key: Same characters as CYRIL, but randomly shuffled.""";
 
-    public boolean control(String[] args, RunSettings runSettings) {
-        if (controlArguments(args, runSettings)) {
-            return true;
+    public RunSettings getSettingsFromArguments(String[] args) {
+        RunSettings runSettings = new RunSettings();
+        configureSettings(args, runSettings);
+        return runSettings;
+    }
+
+    private void configureSettings(String[] args, RunSettings runSettings) {
+        if (args.length < 2 || args.length > 4) {
+            return;
         }
+        try {
+            runSettings.setCommand(Command.of(args[0]));
+            runSettings.setFilePath(Path.of(args[1]));
+            if (args.length >= 3) {
+                runSettings.setKey(args[2]);
+                runSettings.setExternalWordlist(args[2]);
+            }
+            if (args.length == 4) {
+                runSettings.setAlphabetType(args[3]);
+            }
+        } catch (Exception ignore) {
+        }
+    }
+
+    public RunSettings getManualSettings() {
+        RunSettings runSettings = new RunSettings();
         if (!requestManualInput()) {
-            return false;
+            return runSettings;
         }
         Command command = requestCommand();
         runSettings.setCommand(command);
         runSettings.setFilePath(requestFilePath());
         switch (command) {
-            case DECRYPT, ENCRYPT:
-                String key = requestKey();
-                runSettings.setKey(key);
-                break;
-            case BRUTE_FORCE:
-                String keyWordFile = requestKeyWordFile();
-                runSettings.setExternalWordlist(keyWordFile);
-                break;
+            case DECRYPT, ENCRYPT -> runSettings.setKey(requestKeyOffset());
+            case BRUTE_FORCE -> runSettings.setExternalWordlist(requestKeyWordFile());
         }
         String alphabetType = requestAlphabetType();
         runSettings.setAlphabetType(alphabetType);
-        System.out.println(runSettings);
-        return runSettings.isValid();
-    }
-
-    private boolean controlArguments(String[] args, RunSettings runSettings) {
-        if (args.length < 2 || args.length > 4) {
-            return false;
-        }
-        runSettings.setCommand(Command.of(args[0]));
-        runSettings.setFilePath(Path.of(args[1]));
-        if (args.length >= 3) {
-            runSettings.setKey(args[2]);
-            runSettings.setExternalWordlist(args[2]);
-        }
-        if (args.length == 4) {
-            runSettings.setAlphabetType(args[3]);
-        }
-        System.out.println(runSettings);
-        return runSettings.isValid();
+        return runSettings;
     }
 
     private boolean requestManualInput() {
@@ -56,7 +74,7 @@ public class SettingsController {
         boolean isManual = false;
         boolean isCorrect;
         do {
-            System.out.println(Message.MANUAL_REQUEST);
+            System.out.println(MANUAL_REQUEST);
             String answer = scanner.nextLine().toLowerCase();
             switch (answer) {
                 case "y", "yes" -> {
@@ -72,76 +90,65 @@ public class SettingsController {
 
     private Command requestCommand() {
         Scanner scanner = new Scanner(System.in);
-        Command command;
-        boolean isCorrect;
+        Command command = null;
         do {
-            System.out.println(Message.COMMAND_REQUEST);
-            String answer = scanner.nextLine().toLowerCase();
+            System.out.println(COMMAND_REQUEST);
+            String answer = scanner.nextLine();
             if (Util.isInteger(answer)) {
                 int userChoice = Util.tryToInt(answer);
                 switch (userChoice) {
                     case 1 -> command = Command.ENCRYPT;
                     case 2 -> command = Command.DECRYPT;
                     case 3 -> command = Command.BRUTE_FORCE;
-                    default -> command = Command.BAD_COMMAND;
+                    default -> {
+                    }
                 }
-            } else {
-                command = Command.of(answer);
             }
-            isCorrect = command != Command.BAD_COMMAND;
-        } while (!isCorrect);
+        } while (command == null);
         return command;
     }
 
     private Path requestFilePath() {
         Scanner scanner = new Scanner(System.in);
         Path path;
-        boolean isCorrect;
         do {
-            System.out.println(Message.PATH_REQUEST);
-            String answer = scanner.nextLine().toLowerCase();
+            System.out.println(PATH_REQUEST);
+            String answer = scanner.nextLine();
             path = Path.of(answer);
-            isCorrect = Util.isFileExists(path);
-        } while (!isCorrect);
+        } while (!Files.isRegularFile(path));
         return path;
     }
 
-    private String requestKey() {
+    private String requestKeyOffset() {
         Scanner scanner = new Scanner(System.in);
         String key;
-        boolean isCorrect;
         do {
-            System.out.println(Message.KEY_REQUEST);
-            String answer = scanner.nextLine().toLowerCase();
-            key = answer;
-            isCorrect = Util.isInteger(answer);
-        } while (!isCorrect);
+            System.out.println(KEY_REQUEST);
+            key = scanner.nextLine();
+        } while (!Util.isInteger(key));
         return key;
     }
 
     private String requestKeyWordFile() {
         Scanner scanner = new Scanner(System.in);
         Path path;
-        boolean isCorrect;
         do {
-            System.out.println(Message.KEY_WORD_REQUEST);
-            String answer = scanner.nextLine().toLowerCase();
+            System.out.println(KEY_WORD_REQUEST);
+            String answer = scanner.nextLine();
             if (answer.isBlank()) {
                 return "";
             }
             path = Path.of(answer);
-            isCorrect = Util.isFileExists(path);
-        } while (!isCorrect);
+        } while (!Files.isRegularFile(path));
         return path.toString();
     }
 
     private String requestAlphabetType() {
         Scanner scanner = new Scanner(System.in);
-        String alphabet;
-        boolean isCorrect;
+        String alphabet = "";
         do {
-            System.out.println(Message.ALPHABET_REQUEST);
-            String answer = scanner.nextLine().toLowerCase();
+            System.out.println(ALPHABET_REQUEST);
+            String answer = scanner.nextLine();
             if (Util.isInteger(answer)) {
                 int userChoice = Util.tryToInt(answer);
                 switch (userChoice) {
@@ -151,15 +158,11 @@ public class SettingsController {
                     case 4 -> alphabet = "CYRIL";
                     case 5 -> alphabet = "LATIN_MIX";
                     case 6 -> alphabet = "CYRIL_MIX";
-                    default -> alphabet = "";
+                    default -> {
+                    }
                 }
-            } else {
-                alphabet = "";
             }
-            isCorrect = !alphabet.isBlank();
-        } while (!isCorrect);
-        return "";
+        } while (alphabet.isBlank());
+        return alphabet;
     }
-
-
 }
